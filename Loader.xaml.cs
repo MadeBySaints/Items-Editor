@@ -391,7 +391,7 @@ namespace Devm_items_editor
                                 // This one include all items. This can take realy long time to finish.
                                 allItems = true;
                                 break;
-                            } else if (item.Type.Length > 0 && box.Xml.Contains(item.LootType)) {
+                            } else if (item.Type.Length > 0 && box.Xml.Contains(item.Type)) {
                                 ignoreType = false;
                                 break;
                             }
