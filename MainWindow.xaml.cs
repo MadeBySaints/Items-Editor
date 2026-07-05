@@ -109,6 +109,8 @@ namespace Devm_items_editor
             AbsorbEnergy = int.MinValue;
             AbsorbFire = int.MinValue;
             AbsorbPoison = int.MinValue;
+            AbsorbEarth = int.MinValue;
+            DummyRate = int.MinValue;
             AbsorbIce = int.MinValue;
             AbsorbHoly = int.MinValue;
             AbsorbDeath = int.MinValue;
@@ -328,6 +330,8 @@ namespace Devm_items_editor
         public int AbsorbEnergy { get; set; }
         public int AbsorbFire { get; set; }
         public int AbsorbPoison { get; set; }
+        public int AbsorbEarth { get; set; }
+        public int DummyRate { get; set; }
         public int AbsorbIce { get; set; }
         public int AbsorbHoly { get; set; }
         public int AbsorbDeath { get; set; }
@@ -1130,7 +1134,7 @@ namespace Devm_items_editor
             AbsorbMagics.Text = item.AbsorbMagic != int.MinValue ? item.AbsorbMagic.ToString() : string.Empty;
             AbsorbEnergy.Text = item.AbsorbEnergy != int.MinValue ? item.AbsorbEnergy.ToString() : string.Empty;
             AbsorbFire.Text = item.AbsorbFire != int.MinValue ? item.AbsorbFire.ToString() : string.Empty;
-            AbsorbEarth.Text = item.AbsorbPoison != int.MinValue ? item.AbsorbPoison.ToString() : string.Empty;
+            AbsorbEarth.Text = item.AbsorbEarth != int.MinValue ? item.AbsorbEarth.ToString() : string.Empty;
             AbsorbIce.Text = item.AbsorbIce != int.MinValue ? item.AbsorbIce.ToString() : string.Empty;
             AbsorbHoly.Text = item.AbsorbHoly != int.MinValue ? item.AbsorbHoly.ToString() : string.Empty;
             AbsorbDeath.Text = item.AbsorbDeath != int.MinValue ? item.AbsorbDeath.ToString() : string.Empty;
@@ -1506,7 +1510,7 @@ namespace Devm_items_editor
             item.AbsorbMagic = ParseStringToFinalInt(AbsorbMagics.Text);
             item.AbsorbEnergy = ParseStringToFinalInt(AbsorbEnergy.Text);
             item.AbsorbFire = ParseStringToFinalInt(AbsorbFire.Text);
-            item.AbsorbPoison = ParseStringToFinalInt(AbsorbEarth.Text);
+            item.AbsorbEarth = ParseStringToFinalInt(AbsorbEarth.Text);
             item.AbsorbIce = ParseStringToFinalInt(AbsorbIce.Text);
             item.AbsorbHoly = ParseStringToFinalInt(AbsorbHoly.Text);
             item.AbsorbDeath = ParseStringToFinalInt(AbsorbDeath.Text);
@@ -2514,6 +2518,14 @@ namespace Devm_items_editor
                         attributeNode = xml.CreateNode(XmlNodeType.Element, _itemChildNode, null);
                         attributeNode.Attributes.Append(xml.CreateAttribute(_childKey)).Value = "type";
                         attributeNode.Attributes.Append(xml.CreateAttribute(_childValue)).Value = item.Type;
+
+                        if (item.Type == "dummy" && item.DummyRate != int.MinValue) {
+                            childAttributeNode = xml.CreateNode(XmlNodeType.Element, _itemChildNode, null);
+                            childAttributeNode.Attributes.Append(xml.CreateAttribute(_childKey)).Value = "rate";
+                            childAttributeNode.Attributes.Append(xml.CreateAttribute(_childValue)).Value = item.DummyRate.ToString();
+                            attributeNode.AppendChild(childAttributeNode);
+                        }
+
                         itemNode.AppendChild(attributeNode);
                     }
                 
@@ -2790,7 +2802,7 @@ namespace Devm_items_editor
                 
                     if (item.Moveable != null) {
                         attributeNode = xml.CreateNode(XmlNodeType.Element, _itemChildNode, null);
-                        attributeNode.Attributes.Append(xml.CreateAttribute(_childKey)).Value = "moveable";
+                        attributeNode.Attributes.Append(xml.CreateAttribute(_childKey)).Value = "movable";
                         attributeNode.Attributes.Append(xml.CreateAttribute(_childValue)).Value = (bool)item.Moveable ? "1" : "0";
                         itemNode.AppendChild(attributeNode);
                     }
@@ -2999,6 +3011,13 @@ namespace Devm_items_editor
                         attributeNode = xml.CreateNode(XmlNodeType.Element, _itemChildNode, null);
                         attributeNode.Attributes.Append(xml.CreateAttribute(_childKey)).Value = "absorbpercentpoison";
                         attributeNode.Attributes.Append(xml.CreateAttribute(_childValue)).Value = item.AbsorbPoison.ToString();
+                        itemNode.AppendChild(attributeNode);
+                    }
+
+                    if (item.AbsorbEarth != int.MinValue) {
+                        attributeNode = xml.CreateNode(XmlNodeType.Element, _itemChildNode, null);
+                        attributeNode.Attributes.Append(xml.CreateAttribute(_childKey)).Value = "absorbpercentearth";
+                        attributeNode.Attributes.Append(xml.CreateAttribute(_childValue)).Value = item.AbsorbEarth.ToString();
                         itemNode.AppendChild(attributeNode);
                     }
 
@@ -3917,10 +3936,31 @@ namespace Devm_items_editor
                                 case "type": {
                                         item.Type = childValue.ToLower();
                                         error = false;
+                                        if (item.Type == "dummy" && itemChildNode.ChildNodes.Count > 0) {
+                                            foreach (XmlNode dummyNode in itemChildNode.ChildNodes) {
+                                                if (dummyNode.Name != _itemChildNode) {
+                                                    throw new Exception("'" + _itemChildNode + "' node was expected inside '" + _itemNode + "', got '" + dummyNode.Name + "'.");
+                                                }
+
+                                                foreach (XmlAttribute dummyAttribute in dummyNode.Attributes) {
+                                                    if (dummyAttribute.Name == _childKey && dummyAttribute.Value.ToLower() == "rate") {
+                                                        foreach (XmlAttribute rateValueAttribute in dummyNode.Attributes) {
+                                                            if (rateValueAttribute.Name == _childValue) {
+                                                                item.DummyRate = int.Parse(rateValueAttribute.Value);
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
                                         break;
                                     }
                                 case "description": {
-                                        item.Description = childValue;
+                                        // XML attribute-value normalization collapses any line ending to a
+                                        // single space; .NET's XmlDocument does not always do this itself,
+                                        // so multi-line description text in the source can otherwise come
+                                        // back out with a literal embedded newline instead of a space.
+                                        item.Description = childValue.Replace("\r\n", "\n").Replace("\r", "\n").Replace("\n", " ").Replace("\t", " ");
                                         error = false;
                                         break;
                                     }
@@ -4670,7 +4710,7 @@ namespace Devm_items_editor
                                         break;
                                     }
                                 case "absorbpercentearth": {
-                                        item.AbsorbPoison = childValueInt;
+                                        item.AbsorbEarth = childValueInt;
                                         error = false;
                                         break;
                                     }
@@ -4835,11 +4875,7 @@ namespace Devm_items_editor
                                         error = false;
                                         break;
                                     }
-                                case "moveable": {
-                                        item.Moveable = childValueBool;
-                                        error = false;
-                                        break;
-                                    }
+                                case "moveable":
                                 case "movable": {
                                         item.Moveable = childValueBool;
                                         error = false;
