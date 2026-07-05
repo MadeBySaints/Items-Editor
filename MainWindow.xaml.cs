@@ -28,6 +28,16 @@ namespace Devm_items_editor
             Type = string.Empty;
             Description = string.Empty;
             RuneSpellName = string.Empty;
+            PrimaryType = string.Empty;
+            ScriptType = string.Empty;
+            ScriptEventType = string.Empty;
+            ScriptSlot = string.Empty;
+            ScriptAction = string.Empty;
+            ScriptWeaponType = string.Empty;
+            ScriptWandType = string.Empty;
+            ScriptVocation = string.Empty;
+            BedPart = string.Empty;
+            ElementalBond = string.Empty;
             FloorChange = string.Empty;
             CorpseType = string.Empty;
             FluidSource = string.Empty;
@@ -147,10 +157,39 @@ namespace Devm_items_editor
             ImbueSkillDistance = int.MinValue;
             ImbueSkillMagicLevel = int.MinValue;
             ImbueIncreaseCapacity = int.MinValue;
+            ScriptLevel = int.MinValue;
+            ScriptToDamage = int.MinValue;
+            ScriptFromDamage = int.MinValue;
+            ScriptMana = int.MinValue;
+            ScriptBreakChance = int.MinValue;
+            ScriptArmor = int.MinValue;
+            ScriptChain = double.MinValue;
+            BedPartOf = int.MinValue;
+            TransformOnUse = int.MinValue;
+            ImbueParalysisDeflection = int.MinValue;
+            ImbueSkillFist = int.MinValue;
+            AugmentSlots = int.MinValue;
+            Augments = new List<(string PerkName, string AugmentType, int Value)>();
+            ReflectDamage = int.MinValue;
+            CleavePercent = int.MinValue;
+            PerfectShotDamage = int.MinValue;
+            PerfectShotRange = int.MinValue;
+            MagicShieldCapacityFlat = int.MinValue;
+            MagicShieldCapacityPercent = int.MinValue;
+            Mantra = int.MinValue;
+            HolyMagicLevelPoints = int.MinValue;
+            FireMagicLevelPoints = int.MinValue;
+            EarthMagicLevelPoints = int.MinValue;
+            EnergyMagicLevelPoints = int.MinValue;
+            HealingMagicLevelPoints = int.MinValue;
+            DeathMagicLevelPoints = int.MinValue;
+            IceMagicLevelPoints = int.MinValue;
             #endregion
 
             #region Bool values
 
+            ScriptUnproperly = null;
+            UsedByHouseGuests = null;
             ShowCount = null;
             WrapContainer = null;
             Moveable = null;
@@ -207,6 +246,16 @@ namespace Devm_items_editor
         public string Type { get; set; }
         public string Description { get; set; }
         public string RuneSpellName { get; set; }
+        public string PrimaryType { get; set; }
+        public string ScriptType { get; set; }
+        public string ScriptEventType { get; set; }
+        public string ScriptSlot { get; set; }
+        public string ScriptAction { get; set; }
+        public string ScriptWeaponType { get; set; }
+        public string ScriptWandType { get; set; }
+        public string ScriptVocation { get; set; }
+        public string BedPart { get; set; }
+        public string ElementalBond { get; set; }
         public string FloorChange { get; set; }
         public string CorpseType { get; set; }
         public string FluidSource { get; set; }
@@ -328,9 +377,39 @@ namespace Devm_items_editor
         public int ImbueSkillMagicLevel { get; set; }
         public int ImbueIncreaseCapacity { get; set; }
 
+        public int ScriptLevel { get; set; }
+        public int ScriptToDamage { get; set; }
+        public int ScriptFromDamage { get; set; }
+        public int ScriptMana { get; set; }
+        public int ScriptBreakChance { get; set; }
+        public int ScriptArmor { get; set; }
+        public double ScriptChain { get; set; }
+        public int BedPartOf { get; set; }
+        public int TransformOnUse { get; set; }
+        public int ImbueParalysisDeflection { get; set; }
+        public int ImbueSkillFist { get; set; }
+        public int AugmentSlots { get; set; }
+        public List<(string PerkName, string AugmentType, int Value)> Augments { get; set; }
+        public int ReflectDamage { get; set; }
+        public int CleavePercent { get; set; }
+        public int PerfectShotDamage { get; set; }
+        public int PerfectShotRange { get; set; }
+        public int MagicShieldCapacityFlat { get; set; }
+        public int MagicShieldCapacityPercent { get; set; }
+        public int Mantra { get; set; }
+        public int HolyMagicLevelPoints { get; set; }
+        public int FireMagicLevelPoints { get; set; }
+        public int EarthMagicLevelPoints { get; set; }
+        public int EnergyMagicLevelPoints { get; set; }
+        public int HealingMagicLevelPoints { get; set; }
+        public int DeathMagicLevelPoints { get; set; }
+        public int IceMagicLevelPoints { get; set; }
+
         #endregion
 
         #region Bool values
+        public bool? ScriptUnproperly { get; set; }
+        public bool? UsedByHouseGuests { get; set; }
         public bool? ShowCount { get; set; }
         public bool? WrapContainer { get; set; }
         public bool? Moveable { get; set; }
@@ -775,6 +854,12 @@ namespace Devm_items_editor
                 return;
             }
 
+            try {
+                File.WriteAllLines("C:\\Users\\hunsi\\items_editor_log.txt", _error);
+            } catch (Exception) {
+                // Ignore dump failures, the on-screen log window still works.
+            }
+
             _message = new Message("Log window", this);
 
             Button closeButton = _message.CreateNewButton("Close");
@@ -822,7 +907,12 @@ namespace Devm_items_editor
         public void SelectItem()
         {
             Item item = GetItemByID((int)_selectionGrid.DataContext);
-            
+
+            System.IO.File.AppendAllText("C:\\Users\\hunsi\\select_item_debug.log",
+                "clicked DataContext=" + (int)_selectionGrid.DataContext +
+                " item=" + (item == null ? "NULL" : ("FromID=" + item.FromID + " ToID=" + item.ToID + " Name='" + item.Name + "' Type='" + item.Type + "' RuneSpellName='" + item.RuneSpellName + "' Description='" + item.Description + "'")) +
+                "\r\n");
+
             if (item == null) {
                 return;
             }
@@ -2433,6 +2523,13 @@ namespace Devm_items_editor
                         attributeNode.Attributes.Append(xml.CreateAttribute(_childValue)).Value = item.Description;
                         itemNode.AppendChild(attributeNode);
                     }
+
+                    if (item.PrimaryType.Length > 0) {
+                        attributeNode = xml.CreateNode(XmlNodeType.Element, _itemChildNode, null);
+                        attributeNode.Attributes.Append(xml.CreateAttribute(_childKey)).Value = "primarytype";
+                        attributeNode.Attributes.Append(xml.CreateAttribute(_childValue)).Value = item.PrimaryType;
+                        itemNode.AppendChild(attributeNode);
+                    }
                 
                     if (item.RuneSpellName.Length > 0) {
                         attributeNode = xml.CreateNode(XmlNodeType.Element, _itemChildNode, null);
@@ -2547,6 +2644,20 @@ namespace Devm_items_editor
                         itemNode.AppendChild(attributeNode);
                     }
 
+                    if (item.BedPart.Length > 0) {
+                        attributeNode = xml.CreateNode(XmlNodeType.Element, _itemChildNode, null);
+                        attributeNode.Attributes.Append(xml.CreateAttribute(_childKey)).Value = "bedpart";
+                        attributeNode.Attributes.Append(xml.CreateAttribute(_childValue)).Value = item.BedPart;
+                        itemNode.AppendChild(attributeNode);
+                    }
+
+                    if (item.ElementalBond.Length > 0) {
+                        attributeNode = xml.CreateNode(XmlNodeType.Element, _itemChildNode, null);
+                        attributeNode.Attributes.Append(xml.CreateAttribute(_childKey)).Value = "elementalbond";
+                        attributeNode.Attributes.Append(xml.CreateAttribute(_childValue)).Value = item.ElementalBond;
+                        itemNode.AppendChild(attributeNode);
+                    }
+
                     #endregion
 
                     #region Boolean
@@ -2576,6 +2687,13 @@ namespace Devm_items_editor
                         attributeNode = xml.CreateNode(XmlNodeType.Element, _itemChildNode, null);
                         attributeNode.Attributes.Append(xml.CreateAttribute(_childKey)).Value = "replaceable";
                         attributeNode.Attributes.Append(xml.CreateAttribute(_childValue)).Value = (bool)item.Replaceable ? "1" : "0";
+                        itemNode.AppendChild(attributeNode);
+                    }
+
+                    if (item.UsedByHouseGuests != null) {
+                        attributeNode = xml.CreateNode(XmlNodeType.Element, _itemChildNode, null);
+                        attributeNode.Attributes.Append(xml.CreateAttribute(_childKey)).Value = "usedbyhouseguests";
+                        attributeNode.Attributes.Append(xml.CreateAttribute(_childValue)).Value = (bool)item.UsedByHouseGuests ? "1" : "0";
                         itemNode.AppendChild(attributeNode);
                     }
 
@@ -2984,28 +3102,28 @@ namespace Devm_items_editor
 
                     if (item.SkillManaAmount != int.MinValue) {
                         attributeNode = xml.CreateNode(XmlNodeType.Element, _itemChildNode, null);
-                        attributeNode.Attributes.Append(xml.CreateAttribute(_childKey)).Value = "skillmanaamount";
+                        attributeNode.Attributes.Append(xml.CreateAttribute(_childKey)).Value = "manaleechamount";
                         attributeNode.Attributes.Append(xml.CreateAttribute(_childValue)).Value = item.SkillManaAmount.ToString();
                         itemNode.AppendChild(attributeNode);
                     }
 
                     if (item.SkillManaChance != int.MinValue) {
                         attributeNode = xml.CreateNode(XmlNodeType.Element, _itemChildNode, null);
-                        attributeNode.Attributes.Append(xml.CreateAttribute(_childKey)).Value = "skillmanachance";
+                        attributeNode.Attributes.Append(xml.CreateAttribute(_childKey)).Value = "manaleechchance";
                         attributeNode.Attributes.Append(xml.CreateAttribute(_childValue)).Value = item.SkillManaChance.ToString();
                         itemNode.AppendChild(attributeNode);
                     }
 
                     if (item.SkillLifeAmount != int.MinValue) {
                         attributeNode = xml.CreateNode(XmlNodeType.Element, _itemChildNode, null);
-                        attributeNode.Attributes.Append(xml.CreateAttribute(_childKey)).Value = "skilllifeamount";
+                        attributeNode.Attributes.Append(xml.CreateAttribute(_childKey)).Value = "lifeleechamount";
                         attributeNode.Attributes.Append(xml.CreateAttribute(_childValue)).Value = item.SkillLifeAmount.ToString();
                         itemNode.AppendChild(attributeNode);
                     }
 
                     if (item.SkillLifeChance != int.MinValue) {
                         attributeNode = xml.CreateNode(XmlNodeType.Element, _itemChildNode, null);
-                        attributeNode.Attributes.Append(xml.CreateAttribute(_childKey)).Value = "skilllifechance";
+                        attributeNode.Attributes.Append(xml.CreateAttribute(_childKey)).Value = "lifeleechchance";
                         attributeNode.Attributes.Append(xml.CreateAttribute(_childValue)).Value = item.SkillLifeChance.ToString();
                         itemNode.AppendChild(attributeNode);
                     }
@@ -3192,6 +3310,118 @@ namespace Devm_items_editor
                         itemNode.AppendChild(attributeNode);
                     }
 
+                    if (item.BedPartOf != int.MinValue) {
+                        attributeNode = xml.CreateNode(XmlNodeType.Element, _itemChildNode, null);
+                        attributeNode.Attributes.Append(xml.CreateAttribute(_childKey)).Value = "bedpartof";
+                        attributeNode.Attributes.Append(xml.CreateAttribute(_childValue)).Value = item.BedPartOf.ToString();
+                        itemNode.AppendChild(attributeNode);
+                    }
+
+                    if (item.TransformOnUse != int.MinValue) {
+                        attributeNode = xml.CreateNode(XmlNodeType.Element, _itemChildNode, null);
+                        attributeNode.Attributes.Append(xml.CreateAttribute(_childKey)).Value = "transformonuse";
+                        attributeNode.Attributes.Append(xml.CreateAttribute(_childValue)).Value = item.TransformOnUse.ToString();
+                        itemNode.AppendChild(attributeNode);
+                    }
+
+                    if (item.ReflectDamage != int.MinValue) {
+                        attributeNode = xml.CreateNode(XmlNodeType.Element, _itemChildNode, null);
+                        attributeNode.Attributes.Append(xml.CreateAttribute(_childKey)).Value = "reflectdamage";
+                        attributeNode.Attributes.Append(xml.CreateAttribute(_childValue)).Value = item.ReflectDamage.ToString();
+                        itemNode.AppendChild(attributeNode);
+                    }
+
+                    if (item.CleavePercent != int.MinValue) {
+                        attributeNode = xml.CreateNode(XmlNodeType.Element, _itemChildNode, null);
+                        attributeNode.Attributes.Append(xml.CreateAttribute(_childKey)).Value = "cleavepercent";
+                        attributeNode.Attributes.Append(xml.CreateAttribute(_childValue)).Value = item.CleavePercent.ToString();
+                        itemNode.AppendChild(attributeNode);
+                    }
+
+                    if (item.PerfectShotDamage != int.MinValue) {
+                        attributeNode = xml.CreateNode(XmlNodeType.Element, _itemChildNode, null);
+                        attributeNode.Attributes.Append(xml.CreateAttribute(_childKey)).Value = "perfectshotdamage";
+                        attributeNode.Attributes.Append(xml.CreateAttribute(_childValue)).Value = item.PerfectShotDamage.ToString();
+                        itemNode.AppendChild(attributeNode);
+                    }
+
+                    if (item.PerfectShotRange != int.MinValue) {
+                        attributeNode = xml.CreateNode(XmlNodeType.Element, _itemChildNode, null);
+                        attributeNode.Attributes.Append(xml.CreateAttribute(_childKey)).Value = "perfectshotrange";
+                        attributeNode.Attributes.Append(xml.CreateAttribute(_childValue)).Value = item.PerfectShotRange.ToString();
+                        itemNode.AppendChild(attributeNode);
+                    }
+
+                    if (item.MagicShieldCapacityFlat != int.MinValue) {
+                        attributeNode = xml.CreateNode(XmlNodeType.Element, _itemChildNode, null);
+                        attributeNode.Attributes.Append(xml.CreateAttribute(_childKey)).Value = "magicshieldcapacityflat";
+                        attributeNode.Attributes.Append(xml.CreateAttribute(_childValue)).Value = item.MagicShieldCapacityFlat.ToString();
+                        itemNode.AppendChild(attributeNode);
+                    }
+
+                    if (item.MagicShieldCapacityPercent != int.MinValue) {
+                        attributeNode = xml.CreateNode(XmlNodeType.Element, _itemChildNode, null);
+                        attributeNode.Attributes.Append(xml.CreateAttribute(_childKey)).Value = "magicshieldcapacitypercent";
+                        attributeNode.Attributes.Append(xml.CreateAttribute(_childValue)).Value = item.MagicShieldCapacityPercent.ToString();
+                        itemNode.AppendChild(attributeNode);
+                    }
+
+                    if (item.Mantra != int.MinValue) {
+                        attributeNode = xml.CreateNode(XmlNodeType.Element, _itemChildNode, null);
+                        attributeNode.Attributes.Append(xml.CreateAttribute(_childKey)).Value = "mantra";
+                        attributeNode.Attributes.Append(xml.CreateAttribute(_childValue)).Value = item.Mantra.ToString();
+                        itemNode.AppendChild(attributeNode);
+                    }
+
+                    if (item.HolyMagicLevelPoints != int.MinValue) {
+                        attributeNode = xml.CreateNode(XmlNodeType.Element, _itemChildNode, null);
+                        attributeNode.Attributes.Append(xml.CreateAttribute(_childKey)).Value = "holymagiclevelpoints";
+                        attributeNode.Attributes.Append(xml.CreateAttribute(_childValue)).Value = item.HolyMagicLevelPoints.ToString();
+                        itemNode.AppendChild(attributeNode);
+                    }
+
+                    if (item.FireMagicLevelPoints != int.MinValue) {
+                        attributeNode = xml.CreateNode(XmlNodeType.Element, _itemChildNode, null);
+                        attributeNode.Attributes.Append(xml.CreateAttribute(_childKey)).Value = "firemagiclevelpoints";
+                        attributeNode.Attributes.Append(xml.CreateAttribute(_childValue)).Value = item.FireMagicLevelPoints.ToString();
+                        itemNode.AppendChild(attributeNode);
+                    }
+
+                    if (item.EarthMagicLevelPoints != int.MinValue) {
+                        attributeNode = xml.CreateNode(XmlNodeType.Element, _itemChildNode, null);
+                        attributeNode.Attributes.Append(xml.CreateAttribute(_childKey)).Value = "earthmagiclevelpoints";
+                        attributeNode.Attributes.Append(xml.CreateAttribute(_childValue)).Value = item.EarthMagicLevelPoints.ToString();
+                        itemNode.AppendChild(attributeNode);
+                    }
+
+                    if (item.EnergyMagicLevelPoints != int.MinValue) {
+                        attributeNode = xml.CreateNode(XmlNodeType.Element, _itemChildNode, null);
+                        attributeNode.Attributes.Append(xml.CreateAttribute(_childKey)).Value = "energymagiclevelpoints";
+                        attributeNode.Attributes.Append(xml.CreateAttribute(_childValue)).Value = item.EnergyMagicLevelPoints.ToString();
+                        itemNode.AppendChild(attributeNode);
+                    }
+
+                    if (item.HealingMagicLevelPoints != int.MinValue) {
+                        attributeNode = xml.CreateNode(XmlNodeType.Element, _itemChildNode, null);
+                        attributeNode.Attributes.Append(xml.CreateAttribute(_childKey)).Value = "healingmagiclevelpoints";
+                        attributeNode.Attributes.Append(xml.CreateAttribute(_childValue)).Value = item.HealingMagicLevelPoints.ToString();
+                        itemNode.AppendChild(attributeNode);
+                    }
+
+                    if (item.DeathMagicLevelPoints != int.MinValue) {
+                        attributeNode = xml.CreateNode(XmlNodeType.Element, _itemChildNode, null);
+                        attributeNode.Attributes.Append(xml.CreateAttribute(_childKey)).Value = "deathmagiclevelpoints";
+                        attributeNode.Attributes.Append(xml.CreateAttribute(_childValue)).Value = item.DeathMagicLevelPoints.ToString();
+                        itemNode.AppendChild(attributeNode);
+                    }
+
+                    if (item.IceMagicLevelPoints != int.MinValue) {
+                        attributeNode = xml.CreateNode(XmlNodeType.Element, _itemChildNode, null);
+                        attributeNode.Attributes.Append(xml.CreateAttribute(_childKey)).Value = "icemagiclevelpoints";
+                        attributeNode.Attributes.Append(xml.CreateAttribute(_childValue)).Value = item.IceMagicLevelPoints.ToString();
+                        itemNode.AppendChild(attributeNode);
+                    }
+
                     if (item.RotateTo != int.MinValue) {
                         attributeNode = xml.CreateNode(XmlNodeType.Element, _itemChildNode, null);
                         attributeNode.Attributes.Append(xml.CreateAttribute(_childKey)).Value = "rotateto";
@@ -3250,6 +3480,13 @@ namespace Devm_items_editor
                             childAttributeNode = xml.CreateNode(XmlNodeType.Element, _itemChildNode, null);
                             childAttributeNode.Attributes.Append(xml.CreateAttribute(_childKey)).Value = "elemental damage";
                             childAttributeNode.Attributes.Append(xml.CreateAttribute(_childValue)).Value = item.ImbueElementalDamage.ToString();
+                            attributeNode.AppendChild(childAttributeNode);
+                        }
+
+                        if (item.ImbueParalysisDeflection != int.MinValue) {
+                            childAttributeNode = xml.CreateNode(XmlNodeType.Element, _itemChildNode, null);
+                            childAttributeNode.Attributes.Append(xml.CreateAttribute(_childKey)).Value = "paralysis deflection";
+                            childAttributeNode.Attributes.Append(xml.CreateAttribute(_childValue)).Value = item.ImbueParalysisDeflection.ToString();
                             attributeNode.AppendChild(childAttributeNode);
                         }
 
@@ -3330,6 +3567,13 @@ namespace Devm_items_editor
                             attributeNode.AppendChild(childAttributeNode);
                         }
 
+                        if (item.ImbueSkillFist != int.MinValue) {
+                            childAttributeNode = xml.CreateNode(XmlNodeType.Element, _itemChildNode, null);
+                            childAttributeNode.Attributes.Append(xml.CreateAttribute(_childKey)).Value = "skillboost fist";
+                            childAttributeNode.Attributes.Append(xml.CreateAttribute(_childValue)).Value = item.ImbueSkillFist.ToString();
+                            attributeNode.AppendChild(childAttributeNode);
+                        }
+
                         if (item.ImbueSkillSword != int.MinValue) {
                             childAttributeNode = xml.CreateNode(XmlNodeType.Element, _itemChildNode, null);
                             childAttributeNode.Attributes.Append(xml.CreateAttribute(_childKey)).Value = "skillboost sword";
@@ -3369,6 +3613,133 @@ namespace Devm_items_editor
                             childAttributeNode = xml.CreateNode(XmlNodeType.Element, _itemChildNode, null);
                             childAttributeNode.Attributes.Append(xml.CreateAttribute(_childKey)).Value = "increase capacity";
                             childAttributeNode.Attributes.Append(xml.CreateAttribute(_childValue)).Value = item.ImbueIncreaseCapacity.ToString();
+                            attributeNode.AppendChild(childAttributeNode);
+                        }
+
+                        itemNode.AppendChild(attributeNode);
+                    }
+
+                    if (item.AugmentSlots != int.MinValue) {
+                        attributeNode = xml.CreateNode(XmlNodeType.Element, _itemChildNode, null);
+                        attributeNode.Attributes.Append(xml.CreateAttribute(_childKey)).Value = "augments";
+                        attributeNode.Attributes.Append(xml.CreateAttribute(_childValue)).Value = item.AugmentSlots.ToString();
+
+                        foreach (var perk in item.Augments) {
+                            childAttributeNode = xml.CreateNode(XmlNodeType.Element, _itemChildNode, null);
+                            childAttributeNode.Attributes.Append(xml.CreateAttribute(_childKey)).Value = perk.PerkName;
+                            childAttributeNode.Attributes.Append(xml.CreateAttribute(_childValue)).Value = perk.AugmentType;
+
+                            XmlNode perkValueNode = xml.CreateNode(XmlNodeType.Element, _itemChildNode, null);
+                            perkValueNode.Attributes.Append(xml.CreateAttribute(_childKey)).Value = "value";
+                            perkValueNode.Attributes.Append(xml.CreateAttribute(_childValue)).Value = perk.Value.ToString();
+                            childAttributeNode.AppendChild(perkValueNode);
+
+                            attributeNode.AppendChild(childAttributeNode);
+                        }
+
+                        itemNode.AppendChild(attributeNode);
+                    }
+
+                    if (item.ScriptType.Length > 0) {
+                        attributeNode = xml.CreateNode(XmlNodeType.Element, _itemChildNode, null);
+                        attributeNode.Attributes.Append(xml.CreateAttribute(_childKey)).Value = "script";
+                        attributeNode.Attributes.Append(xml.CreateAttribute(_childValue)).Value = item.ScriptType;
+
+                        if (item.ScriptEventType.Length > 0) {
+                            childAttributeNode = xml.CreateNode(XmlNodeType.Element, _itemChildNode, null);
+                            childAttributeNode.Attributes.Append(xml.CreateAttribute(_childKey)).Value = "eventType";
+                            childAttributeNode.Attributes.Append(xml.CreateAttribute(_childValue)).Value = item.ScriptEventType;
+                            attributeNode.AppendChild(childAttributeNode);
+                        }
+
+                        if (item.ScriptSlot.Length > 0) {
+                            childAttributeNode = xml.CreateNode(XmlNodeType.Element, _itemChildNode, null);
+                            childAttributeNode.Attributes.Append(xml.CreateAttribute(_childKey)).Value = "slot";
+                            childAttributeNode.Attributes.Append(xml.CreateAttribute(_childValue)).Value = item.ScriptSlot;
+                            attributeNode.AppendChild(childAttributeNode);
+                        }
+
+                        if (item.ScriptAction.Length > 0) {
+                            childAttributeNode = xml.CreateNode(XmlNodeType.Element, _itemChildNode, null);
+                            childAttributeNode.Attributes.Append(xml.CreateAttribute(_childKey)).Value = "action";
+                            childAttributeNode.Attributes.Append(xml.CreateAttribute(_childValue)).Value = item.ScriptAction;
+                            attributeNode.AppendChild(childAttributeNode);
+                        }
+
+                        if (item.ScriptWeaponType.Length > 0) {
+                            childAttributeNode = xml.CreateNode(XmlNodeType.Element, _itemChildNode, null);
+                            childAttributeNode.Attributes.Append(xml.CreateAttribute(_childKey)).Value = "weaponType";
+                            childAttributeNode.Attributes.Append(xml.CreateAttribute(_childValue)).Value = item.ScriptWeaponType;
+                            attributeNode.AppendChild(childAttributeNode);
+                        }
+
+                        if (item.ScriptWandType.Length > 0) {
+                            childAttributeNode = xml.CreateNode(XmlNodeType.Element, _itemChildNode, null);
+                            childAttributeNode.Attributes.Append(xml.CreateAttribute(_childKey)).Value = "wandType";
+                            childAttributeNode.Attributes.Append(xml.CreateAttribute(_childValue)).Value = item.ScriptWandType;
+                            attributeNode.AppendChild(childAttributeNode);
+                        }
+
+                        if (item.ScriptVocation.Length > 0) {
+                            childAttributeNode = xml.CreateNode(XmlNodeType.Element, _itemChildNode, null);
+                            childAttributeNode.Attributes.Append(xml.CreateAttribute(_childKey)).Value = "vocation";
+                            childAttributeNode.Attributes.Append(xml.CreateAttribute(_childValue)).Value = item.ScriptVocation;
+                            attributeNode.AppendChild(childAttributeNode);
+                        }
+
+                        if (item.ScriptLevel != int.MinValue) {
+                            childAttributeNode = xml.CreateNode(XmlNodeType.Element, _itemChildNode, null);
+                            childAttributeNode.Attributes.Append(xml.CreateAttribute(_childKey)).Value = "level";
+                            childAttributeNode.Attributes.Append(xml.CreateAttribute(_childValue)).Value = item.ScriptLevel.ToString();
+                            attributeNode.AppendChild(childAttributeNode);
+                        }
+
+                        if (item.ScriptToDamage != int.MinValue) {
+                            childAttributeNode = xml.CreateNode(XmlNodeType.Element, _itemChildNode, null);
+                            childAttributeNode.Attributes.Append(xml.CreateAttribute(_childKey)).Value = "toDamage";
+                            childAttributeNode.Attributes.Append(xml.CreateAttribute(_childValue)).Value = item.ScriptToDamage.ToString();
+                            attributeNode.AppendChild(childAttributeNode);
+                        }
+
+                        if (item.ScriptFromDamage != int.MinValue) {
+                            childAttributeNode = xml.CreateNode(XmlNodeType.Element, _itemChildNode, null);
+                            childAttributeNode.Attributes.Append(xml.CreateAttribute(_childKey)).Value = "fromDamage";
+                            childAttributeNode.Attributes.Append(xml.CreateAttribute(_childValue)).Value = item.ScriptFromDamage.ToString();
+                            attributeNode.AppendChild(childAttributeNode);
+                        }
+
+                        if (item.ScriptMana != int.MinValue) {
+                            childAttributeNode = xml.CreateNode(XmlNodeType.Element, _itemChildNode, null);
+                            childAttributeNode.Attributes.Append(xml.CreateAttribute(_childKey)).Value = "mana";
+                            childAttributeNode.Attributes.Append(xml.CreateAttribute(_childValue)).Value = item.ScriptMana.ToString();
+                            attributeNode.AppendChild(childAttributeNode);
+                        }
+
+                        if (item.ScriptBreakChance != int.MinValue) {
+                            childAttributeNode = xml.CreateNode(XmlNodeType.Element, _itemChildNode, null);
+                            childAttributeNode.Attributes.Append(xml.CreateAttribute(_childKey)).Value = "breakChance";
+                            childAttributeNode.Attributes.Append(xml.CreateAttribute(_childValue)).Value = item.ScriptBreakChance.ToString();
+                            attributeNode.AppendChild(childAttributeNode);
+                        }
+
+                        if (item.ScriptArmor != int.MinValue) {
+                            childAttributeNode = xml.CreateNode(XmlNodeType.Element, _itemChildNode, null);
+                            childAttributeNode.Attributes.Append(xml.CreateAttribute(_childKey)).Value = "armor";
+                            childAttributeNode.Attributes.Append(xml.CreateAttribute(_childValue)).Value = item.ScriptArmor.ToString();
+                            attributeNode.AppendChild(childAttributeNode);
+                        }
+
+                        if (item.ScriptChain != double.MinValue) {
+                            childAttributeNode = xml.CreateNode(XmlNodeType.Element, _itemChildNode, null);
+                            childAttributeNode.Attributes.Append(xml.CreateAttribute(_childKey)).Value = "chain";
+                            childAttributeNode.Attributes.Append(xml.CreateAttribute(_childValue)).Value = item.ScriptChain.ToString(System.Globalization.CultureInfo.InvariantCulture);
+                            attributeNode.AppendChild(childAttributeNode);
+                        }
+
+                        if (item.ScriptUnproperly != null) {
+                            childAttributeNode = xml.CreateNode(XmlNodeType.Element, _itemChildNode, null);
+                            childAttributeNode.Attributes.Append(xml.CreateAttribute(_childKey)).Value = "unproperly";
+                            childAttributeNode.Attributes.Append(xml.CreateAttribute(_childValue)).Value = (bool)item.ScriptUnproperly ? "true" : "false";
                             attributeNode.AppendChild(childAttributeNode);
                         }
 
@@ -3420,6 +3791,8 @@ namespace Devm_items_editor
                     } else if (itemNode.Name != _itemNode) {
                         throw new Exception("'" + _itemNode + "' node was expected inside '" + _itemsNode + "', got '" + itemNode.Name + "'.");
                     }
+
+                    try {
 
                     Item item = new Item(string.Empty, -1, -1);
 
@@ -3551,6 +3924,98 @@ namespace Devm_items_editor
                                         error = false;
                                         break;
                                     }
+                                case "primarytype": {
+                                        item.PrimaryType = childValue.ToLower();
+                                        error = false;
+                                        break;
+                                    }
+                                case "script": {
+                                        item.ScriptType = childValue.ToLower();
+                                        error = false;
+                                        if (itemChildNode.ChildNodes.Count > 0) {
+                                            foreach (XmlNode scriptNode in itemChildNode.ChildNodes) {
+                                                if (scriptNode.Name != _itemChildNode) {
+                                                    throw new Exception("'" + _itemChildNode + "' node was expected inside '" + _itemNode + "', got '" + scriptNode.Name + "'.");
+                                                }
+
+                                                string scriptChildKey = string.Empty;
+                                                string scriptChildValue = string.Empty;
+                                                foreach (XmlAttribute scriptChildAttribute in scriptNode.Attributes) {
+                                                    if (scriptChildAttribute.Name == _childKey) {
+                                                        scriptChildKey = scriptChildAttribute.Value;
+                                                    } else if (scriptChildAttribute.Name == _childValue) {
+                                                        scriptChildValue = scriptChildAttribute.Value;
+                                                    } else {
+                                                        throw new Exception("'" + _childKey + "' or '" + _childValue + "' node was expected inside '" + _itemChildNode + "' on 'script', got '" + scriptChildAttribute.Name + "'.");
+                                                    }
+                                                }
+
+                                                scriptChildKey = scriptChildKey.ToLower();
+                                                switch (scriptChildKey) {
+                                                    case "eventtype": {
+                                                            item.ScriptEventType = scriptChildValue.ToLower();
+                                                            break;
+                                                        }
+                                                    case "slot": {
+                                                            item.ScriptSlot = scriptChildValue.ToLower();
+                                                            break;
+                                                        }
+                                                    case "action": {
+                                                            item.ScriptAction = scriptChildValue.ToLower();
+                                                            break;
+                                                        }
+                                                    case "weapontype": {
+                                                            item.ScriptWeaponType = scriptChildValue.ToLower();
+                                                            break;
+                                                        }
+                                                    case "wandtype": {
+                                                            item.ScriptWandType = scriptChildValue.ToLower();
+                                                            break;
+                                                        }
+                                                    case "vocation": {
+                                                            item.ScriptVocation = scriptChildValue;
+                                                            break;
+                                                        }
+                                                    case "level": {
+                                                            item.ScriptLevel = int.Parse(scriptChildValue);
+                                                            break;
+                                                        }
+                                                    case "todamage": {
+                                                            item.ScriptToDamage = int.Parse(scriptChildValue);
+                                                            break;
+                                                        }
+                                                    case "fromdamage": {
+                                                            item.ScriptFromDamage = int.Parse(scriptChildValue);
+                                                            break;
+                                                        }
+                                                    case "mana": {
+                                                            item.ScriptMana = int.Parse(scriptChildValue);
+                                                            break;
+                                                        }
+                                                    case "breakchance": {
+                                                            item.ScriptBreakChance = int.Parse(scriptChildValue);
+                                                            break;
+                                                        }
+                                                    case "armor": {
+                                                            item.ScriptArmor = int.Parse(scriptChildValue);
+                                                            break;
+                                                        }
+                                                    case "chain": {
+                                                            item.ScriptChain = double.Parse(scriptChildValue, System.Globalization.CultureInfo.InvariantCulture);
+                                                            break;
+                                                        }
+                                                    case "unproperly": {
+                                                            item.ScriptUnproperly = scriptChildValue.ToLower() == "true" || scriptChildValue == "1";
+                                                            break;
+                                                        }
+                                                    default: {
+                                                            throw new Exception("Unknown field attribute value inside '" + childKey + "' script key, got '" + scriptChildKey + "'.");
+                                                        }
+                                                }
+                                            }
+                                        }
+                                        break;
+                                    }
                                 case "runespellname": {
                                         item.RuneSpellName = childValue;
                                         error = false;
@@ -3654,6 +4119,16 @@ namespace Devm_items_editor
                                         error = false;
                                         break;
                                     }
+                                case "bedpart": {
+                                        item.BedPart = childValue.ToLower();
+                                        error = false;
+                                        break;
+                                    }
+                                case "elementalbond": {
+                                        item.ElementalBond = childValue.ToLower();
+                                        error = false;
+                                        break;
+                                    }
                                 default: {
                                         break;
                                     }
@@ -3703,6 +4178,86 @@ namespace Devm_items_editor
                                         error = false;
                                         break;
                                     }
+                                case "bedpartof": {
+                                        item.BedPartOf = childValueInt;
+                                        error = false;
+                                        break;
+                                    }
+                                case "transformonuse": {
+                                        item.TransformOnUse = childValueInt;
+                                        error = false;
+                                        break;
+                                    }
+                                case "reflectdamage": {
+                                        item.ReflectDamage = childValueInt;
+                                        error = false;
+                                        break;
+                                    }
+                                case "cleavepercent": {
+                                        item.CleavePercent = childValueInt;
+                                        error = false;
+                                        break;
+                                    }
+                                case "perfectshotdamage": {
+                                        item.PerfectShotDamage = childValueInt;
+                                        error = false;
+                                        break;
+                                    }
+                                case "perfectshotrange": {
+                                        item.PerfectShotRange = childValueInt;
+                                        error = false;
+                                        break;
+                                    }
+                                case "magicshieldcapacityflat": {
+                                        item.MagicShieldCapacityFlat = childValueInt;
+                                        error = false;
+                                        break;
+                                    }
+                                case "magicshieldcapacitypercent": {
+                                        item.MagicShieldCapacityPercent = childValueInt;
+                                        error = false;
+                                        break;
+                                    }
+                                case "mantra": {
+                                        item.Mantra = childValueInt;
+                                        error = false;
+                                        break;
+                                    }
+                                case "holymagiclevelpoints": {
+                                        item.HolyMagicLevelPoints = childValueInt;
+                                        error = false;
+                                        break;
+                                    }
+                                case "firemagiclevelpoints": {
+                                        item.FireMagicLevelPoints = childValueInt;
+                                        error = false;
+                                        break;
+                                    }
+                                case "earthmagiclevelpoints": {
+                                        item.EarthMagicLevelPoints = childValueInt;
+                                        error = false;
+                                        break;
+                                    }
+                                case "energymagiclevelpoints": {
+                                        item.EnergyMagicLevelPoints = childValueInt;
+                                        error = false;
+                                        break;
+                                    }
+                                case "healingmagiclevelpoints": {
+                                        item.HealingMagicLevelPoints = childValueInt;
+                                        error = false;
+                                        break;
+                                    }
+                                case "deathmagiclevelpoints": {
+                                        item.DeathMagicLevelPoints = childValueInt;
+                                        error = false;
+                                        break;
+                                    }
+                                case "icemagiclevelpoints": {
+                                        item.IceMagicLevelPoints = childValueInt;
+                                        error = false;
+                                        break;
+                                    }
 								case "imbuementslot": {
                                     item.ImbuingSlots = childValueInt;
                                     error = false;
@@ -3728,6 +4283,12 @@ namespace Devm_items_editor
 											switch (imbueChildKey) {
 												case "elemental damage": {
 													    item.ImbueElementalDamage = int.Parse(imbueChildValue);
+													    break;
+												    }
+												case "paralysis deflection":
+												case "vibrancy":
+												case "paralysis removal": {
+													    item.ImbueParalysisDeflection = int.Parse(imbueChildValue);
 													    break;
 												    }
 												case "life leech": {
@@ -3774,6 +4335,10 @@ namespace Devm_items_editor
 													    item.ImbueSkillAxe = int.Parse(imbueChildValue);
 													    break;
 												    }
+												case "skillboost fist": {
+													    item.ImbueSkillFist = int.Parse(imbueChildValue);
+													    break;
+												    }
 												case "skillboost sword": {
 													    item.ImbueSkillSword = int.Parse(imbueChildValue);
 													    break;
@@ -3807,6 +4372,44 @@ namespace Devm_items_editor
                                     }
                                     break;
                                 }
+                                case "augments": {
+                                        item.AugmentSlots = childValueInt;
+                                        error = false;
+                                        if (itemChildNode.ChildNodes.Count > 0) {
+                                            foreach (XmlNode perkNode in itemChildNode.ChildNodes) {
+                                                if (perkNode.Name != _itemChildNode) {
+                                                    throw new Exception("'" + _itemChildNode + "' node was expected inside '" + _itemNode + "', got '" + perkNode.Name + "'.");
+                                                }
+
+                                                string perkName = string.Empty;
+                                                string augmentType = string.Empty;
+                                                foreach (XmlAttribute perkAttribute in perkNode.Attributes) {
+                                                    if (perkAttribute.Name == _childKey) {
+                                                        perkName = perkAttribute.Value;
+                                                    } else if (perkAttribute.Name == _childValue) {
+                                                        augmentType = perkAttribute.Value;
+                                                    } else {
+                                                        throw new Exception("'" + _childKey + "' or '" + _childValue + "' node was expected inside '" + _itemChildNode + "' on 'augments', got '" + perkAttribute.Name + "'.");
+                                                    }
+                                                }
+
+                                                int augmentValue = 0;
+                                                foreach (XmlNode valueNode in perkNode.ChildNodes) {
+                                                    if (valueNode.Name != _itemChildNode) {
+                                                        continue;
+                                                    }
+                                                    foreach (XmlAttribute valueAttribute in valueNode.Attributes) {
+                                                        if (valueAttribute.Name == _childValue) {
+                                                            augmentValue = int.Parse(valueAttribute.Value);
+                                                        }
+                                                    }
+                                                }
+
+                                                item.Augments.Add((perkName, augmentType, augmentValue));
+                                            }
+                                        }
+                                        break;
+                                    }
                                 case "wrapableto": {
                                         item.WrapableTo = childValueInt;
                                         error = false;
@@ -3952,22 +4555,26 @@ namespace Devm_items_editor
                                         error = false;
                                         break;
                                     }
-                                case "skilllifechance": {
+                                case "skilllifechance":
+                                case "lifeleechchance": {
                                         item.SkillLifeChance = childValueInt;
                                         error = false;
                                         break;
                                     }
-                                case "skilllifeamount": {
+                                case "skilllifeamount":
+                                case "lifeleechamount": {
                                         item.SkillLifeAmount = childValueInt;
                                         error = false;
                                         break;
                                     }
-                                case "skillmanachance": {
+                                case "skillmanachance":
+                                case "manaleechchance": {
                                         item.SkillManaChance = childValueInt;
                                         error = false;
                                         break;
                                     }
-                                case "skillmanaamount": {
+                                case "skillmanaamount":
+                                case "manaleechamount": {
                                         item.SkillManaAmount = childValueInt;
                                         error = false;
                                         break;
@@ -4188,6 +4795,11 @@ namespace Devm_items_editor
 
                             #region Boolean
                             switch (childKey) {
+                                case "usedbyhouseguests": {
+                                        item.UsedByHouseGuests = childValueBool;
+                                        error = false;
+                                        break;
+                                    }
                                 case "manashield": {
                                         item.ManaShield = childValueBool;
                                         error = false;
@@ -4343,16 +4955,22 @@ namespace Devm_items_editor
                     }
 
                     ItemsList.Items.Add(item);
+
+                    } catch (Exception itemEx) {
+                        AppendLog("[ID: " + lastIDString + "] Skipped item due to parse error: " + itemEx.Message);
+                        continue;
+                    }
                 }
 
                 ItemsList.Items.SortDescriptions.Clear();
                 ItemsList.Items.SortDescriptions.Add(new System.ComponentModel.SortDescription("FromID", System.ComponentModel.ListSortDirection.Ascending));
-                ItemsList.EndInit();
 
                 ShowLog();
             } catch (Exception ex) {
                 MessageBox.Show("[ERROR] " + " " + ex.Message + " LastItem:" + lastIDString + ". Please reload the application and try again or check for an updated version.");
                 return false;
+            } finally {
+                ItemsList.EndInit();
             }
             return true;
         }
