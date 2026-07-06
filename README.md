@@ -28,6 +28,8 @@ This item editor was created to work along with Canary and OpenTibiaBR repositor
  - Update your items data from tibia WIKI. I highly recommend you load the client 12 assets first.
  - If the log window pops up with warnings/errors, it's also dumped to `items_editor_log.txt` next to your
    user profile folder for easier review.
+ - A built copy is always available from the [Releases page](../../releases/tag/latest) — it's rebuilt
+   automatically on every push to `main` (see [`.github/workflows/release.yml`](.github/workflows/release.yml)).
 
 # Need help?
  - Join the SaintsOT Discord: https://discord.gg/6tA85qhJEY

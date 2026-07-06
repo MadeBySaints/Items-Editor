@@ -1,0 +1,55 @@
+name: Release - Windows Build
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "**.cs"
+      - "**.xaml"
+      - "Devm items editor.csproj"
+      - "Lzma/**"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    name: Build & Publish
+    runs-on: windows-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Restore dependencies
+        run: dotnet restore "Devm items editor.csproj"
+
+      - name: Build (Release)
+        run: dotnet build "Devm items editor.csproj" -c Release --no-restore
+
+      - name: Package build
+        shell: pwsh
+        run: |
+          $stage = "package"
+          New-Item -ItemType Directory -Force -Path $stage | Out-Null
+          Copy-Item "bin/Release/netcoreapp3.1/ItemsEditor.exe" $stage/
+          Compress-Archive -Path "$stage/*" -DestinationPath ItemsEditor-windows.zip
+
+      - name: Move rolling 'latest' tag
+        run: |
+          git tag -f latest
+          git push origin -f latest
+
+      - name: Publish release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: latest
+          name: "Latest build"
+          body: Automatically built from the latest commit on `main` (${{ github.sha }}).
+          files: ItemsEditor-windows.zip
+          make_latest: true
