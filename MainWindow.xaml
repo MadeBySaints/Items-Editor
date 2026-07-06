@@ -159,6 +159,8 @@
                 <Button Content="Save XML as" Margin="5,5,5,5" Click="SaveXML_Click"/>
                 <Button Content="Load assets" Margin="5,5,5,5" Click="LoadAssets_Click"/>
                 <Button Content="Load wiki" Margin="5,5,5,5" Click="LoadWiki_Click"/>
+                <Button Content="Find free IDs" Margin="5,5,5,5" Click="FindFreeIds_Click"/>
+                <Button Content="Data quality report" Margin="5,5,5,5" Click="DataQualityReport_Click"/>
             </StackPanel>
         </Grid>
 
@@ -190,11 +192,90 @@
             <Rectangle Fill="#FFD6D5D5" VerticalAlignment="Top" Height="20" MouseDown="MouseDownToDrag"/>
             <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" CanContentScroll="True">
                 <Control:MetroAnimatedTabControl Grid.ColumnSpan="2" Control:HeaderedControlHelper.HeaderFontSize="16">
+                    <TabItem Header="Overview">
+                        <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+                            <Rectangle MouseDown="MouseDownToDrag" Fill="#FFEFEFEF"/>
+                            <Grid Margin="20">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="1*"/>
+                                </Grid.RowDefinitions>
+
+                                <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,15">
+                                    <Border Background="#FF4D6886" CornerRadius="6" Padding="18,10" Margin="0,0,15,0">
+                                        <StackPanel>
+                                            <TextBlock Text="Loaded entries" Foreground="#FFD6E4F0" FontSize="11"/>
+                                            <TextBlock x:Name="OverviewEntryCount" Text="0" Foreground="White" FontSize="26" FontWeight="Bold"/>
+                                        </StackPanel>
+                                    </Border>
+                                    <Border Background="#FF4D6886" CornerRadius="6" Padding="18,10" Margin="0,0,15,0">
+                                        <StackPanel>
+                                            <TextBlock Text="Total item ids covered" Foreground="#FFD6E4F0" FontSize="11"/>
+                                            <TextBlock x:Name="OverviewIdCount" Text="0" Foreground="White" FontSize="26" FontWeight="Bold"/>
+                                        </StackPanel>
+                                    </Border>
+                                    <Border Background="#FF4D6886" CornerRadius="6" Padding="18,10" Margin="0,0,15,0">
+                                        <StackPanel>
+                                            <TextBlock Text="Distinct types" Foreground="#FFD6E4F0" FontSize="11"/>
+                                            <TextBlock x:Name="OverviewTypeCount" Text="0" Foreground="White" FontSize="26" FontWeight="Bold"/>
+                                        </StackPanel>
+                                    </Border>
+                                    <Border Background="#FF4D6886" CornerRadius="6" Padding="18,10">
+                                        <StackPanel>
+                                            <TextBlock Text="Last load warnings" Foreground="#FFD6E4F0" FontSize="11"/>
+                                            <TextBlock x:Name="OverviewWarningCount" Text="0" Foreground="White" FontSize="26" FontWeight="Bold"/>
+                                        </StackPanel>
+                                    </Border>
+                                </StackPanel>
+
+                                <TextBlock Grid.Row="1" Text="Breakdowns update automatically after Load XML / Load assets." FontStyle="Italic" Foreground="#FF6B6B6B" Margin="0,0,0,10"/>
+
+                                <Grid Grid.Row="2">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="1*"/>
+                                        <ColumnDefinition Width="20"/>
+                                        <ColumnDefinition Width="1*"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <DockPanel Grid.Column="0">
+                                        <TextBlock DockPanel.Dock="Top" Text="By type" FontWeight="Bold" Foreground="#FF4D6886" Margin="0,0,0,5"/>
+                                        <ListView x:Name="OverviewTypeList" DockPanel.Dock="Top">
+                                            <ListView.View>
+                                                <GridView>
+                                                    <GridViewColumn Header="Type" Width="220" DisplayMemberBinding="{Binding Name}"/>
+                                                    <GridViewColumn Header="Count" Width="80" DisplayMemberBinding="{Binding Count}"/>
+                                                </GridView>
+                                            </ListView.View>
+                                        </ListView>
+                                    </DockPanel>
+
+                                    <DockPanel Grid.Column="2">
+                                        <TextBlock DockPanel.Dock="Top" Text="By primary type" FontWeight="Bold" Foreground="#FF4D6886" Margin="0,0,0,5"/>
+                                        <ListView x:Name="OverviewPrimaryTypeList" DockPanel.Dock="Top">
+                                            <ListView.View>
+                                                <GridView>
+                                                    <GridViewColumn Header="Primary type" Width="220" DisplayMemberBinding="{Binding Name}"/>
+                                                    <GridViewColumn Header="Count" Width="80" DisplayMemberBinding="{Binding Count}"/>
+                                                </GridView>
+                                            </ListView.View>
+                                        </ListView>
+                                    </DockPanel>
+                                </Grid>
+                            </Grid>
+                        </Grid>
+                    </TabItem>
                     <TabItem Header="Index">
                         <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
                             <Rectangle MouseDown="MouseDownToDrag" Fill="#FFEFEFEF"/>
                             <StackPanel Orientation="Vertical" VerticalAlignment="Top">
-                                <Image Source="pack://application:,,,/icon.ico" Margin="0,50,0,0" Width="64" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                <Border Width="96" Height="96" Margin="0,20,0,5" HorizontalAlignment="Center" Background="#FFCFCFCF" BorderBrush="#FF4D6886" BorderThickness="1">
+                                    <Grid>
+                                        <Image x:Name="ItemSpritePreview" Width="96" Height="96" RenderOptions.BitmapScalingMode="NearestNeighbor" Stretch="None"/>
+                                        <Image x:Name="ItemSpritePlaceholder" Source="pack://application:,,,/icon.ico" Width="48" HorizontalAlignment="Center" VerticalAlignment="Center" Opacity="0.5"/>
+                                    </Grid>
+                                </Border>
+                                <TextBlock x:Name="ItemSpriteStatus" Text="No sprite loaded" HorizontalAlignment="Center" Foreground="#FF6B6B6B" FontSize="10" Margin="0,0,0,10"/>
                                 <TextBlock Text="Devm item editor v1.0" HorizontalAlignment="Center" Foreground="#FF4D6886" FontWeight="Bold"/>
                                 <TextBlock Text="By Marcosvf132" HorizontalAlignment="Center" Foreground="#FF4D6886" FontSize="10" Margin="0,0,0,15"/>
                                 <StackPanel Orientation="Vertical" VerticalAlignment="Center">

@@ -523,6 +523,7 @@ namespace Devm_items_editor
             _stopWatch.Stop();
             _parent.Show();
             _parent.ShowLog();
+            _parent.RefreshOverviewStats();
             Close();
             _parent._asyncLoader = null;
         }
@@ -567,6 +568,8 @@ namespace Devm_items_editor
                     if (appearances == null || appearances.Object.Count == 0) {
                         throw new Exception("Invalid protobuf file.");
                     }
+
+                    _parent._loadedAppearances = appearances;
 
                     int proggress = 0;
                     foreach (Appearance itemObject in appearances.Object) {
@@ -687,11 +690,12 @@ namespace Devm_items_editor
             _stopWatch.Stop();
             _parent.Show();
             _parent.ShowLog();
+            _parent.RefreshOverviewStats();
             Close();
             _parent._asyncLoader = null;
         }
         #endregion
-        
+
         #region Async otb worker
         public void InitializeOTBLoader()
         {

@@ -49,10 +49,18 @@ namespace Devm_items_editor
             };
 
             if ((bool)dialog.ShowDialog()) {
+                string assetsFolder = System.IO.Path.GetDirectoryName(dialog.FileName);
+
                 _parent._asyncLoader = new Loader(_parent, null, dialog.FileName);
                 _parent.ClearLog();
                 _parent.Hide();
                 OnClosed(e);
+
+                if (!_parent._spriteRenderer.LoadCatalog(assetsFolder)) {
+                    _parent.AppendLog("[SPRITES] Sprite preview unavailable: " + (_parent._spriteRenderer.LoadError ?? "unknown error"));
+                } else {
+                    _parent.AppendLog("[SPRITES] Sprite catalog loaded, previews enabled.");
+                }
 
                 _parent._asyncLoader.InitializeAssetsLoader();
                 _parent._asyncLoader.Show();

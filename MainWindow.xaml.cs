@@ -9,6 +9,7 @@ using System.Windows.Media;
 using System.Text.RegularExpressions;
 using System.Windows.Shapes;
 using System.Xml;
+using System.Linq;
 using Items.Protobuf.Shared;
 
 namespace Devm_items_editor
@@ -465,6 +466,12 @@ namespace Devm_items_editor
         public bool FilterChecked { get; set; }
     }
 
+    public class TypeCount_t
+    {
+        public string Name { get; set; }
+        public int Count { get; set; }
+    }
+
     public enum DamageElement_t
     {
         Physical,
@@ -726,6 +733,16 @@ namespace Devm_items_editor
 
         public List<(int ClientID, int ServerID)> _itemConverterList = new List<(int ClientID, int ServerID)>();
 
+        // Cached from the last "Load assets" call, used by the free-ID finder to see every
+        // valid appearance even when its item was silently skipped (e.g. blank name placeholders).
+        public Items.Protobuf.Appearances.Appearances _loadedAppearances = null;
+
+        public SpriteRenderer _spriteRenderer = new SpriteRenderer();
+
+        // Cached from the last "Load XML" call, used by the data-quality report to re-scan the
+        // raw XML for duplicate attributes that don't survive into the flattened Item model.
+        public string _lastLoadedXmlPath = null;
+
         private List<string> _error = new List<string>();
 
         private Grid _selectionGrid;
@@ -912,14 +929,11 @@ namespace Devm_items_editor
         {
             Item item = GetItemByID((int)_selectionGrid.DataContext);
 
-            System.IO.File.AppendAllText("C:\\Users\\hunsi\\select_item_debug.log",
-                "clicked DataContext=" + (int)_selectionGrid.DataContext +
-                " item=" + (item == null ? "NULL" : ("FromID=" + item.FromID + " ToID=" + item.ToID + " Name='" + item.Name + "' Type='" + item.Type + "' RuneSpellName='" + item.RuneSpellName + "' Description='" + item.Description + "'")) +
-                "\r\n");
-
             if (item == null) {
                 return;
             }
+
+            UpdateSpritePreview(item.FromID);
 
             #region Strings
 
@@ -3793,6 +3807,7 @@ namespace Devm_items_editor
             {
                 XmlDocument xml = new XmlDocument();
                 xml.Load(xmlDialog.FileName);
+                _lastLoadedXmlPath = xmlDialog.FileName;
 
                 XmlNode itemsNode = xml.LastChild;
                 if (itemsNode == null || itemsNode.Name != _itemsNode || itemsNode.ChildNodes.Count == 0) {
@@ -5008,7 +5023,203 @@ namespace Devm_items_editor
             } finally {
                 ItemsList.EndInit();
             }
+            RefreshOverviewStats();
             return true;
+        }
+
+        public void RefreshOverviewStats()
+        {
+            var typeCounts = new Dictionary<string, int>();
+            var primaryTypeCounts = new Dictionary<string, int>();
+            int totalIds = 0;
+
+            foreach (Item item in ItemsList.Items) {
+                totalIds += (item.ToID - item.FromID + 1);
+
+                string type = item.Type.Length > 0 ? item.Type : "(none)";
+                typeCounts[type] = typeCounts.TryGetValue(type, out int typeCount) ? typeCount + 1 : 1;
+
+                string primaryType = item.PrimaryType.Length > 0 ? item.PrimaryType : "(none)";
+                primaryTypeCounts[primaryType] = primaryTypeCounts.TryGetValue(primaryType, out int primaryCount) ? primaryCount + 1 : 1;
+            }
+
+            OverviewEntryCount.Text = ItemsList.Items.Count.ToString();
+            OverviewIdCount.Text = totalIds.ToString();
+            OverviewTypeCount.Text = typeCounts.Count.ToString();
+            OverviewWarningCount.Text = _error.Count.ToString();
+
+            OverviewTypeList.ItemsSource = typeCounts
+                .OrderByDescending(kv => kv.Value)
+                .Select(kv => new TypeCount_t { Name = kv.Key, Count = kv.Value })
+                .ToList();
+
+            OverviewPrimaryTypeList.ItemsSource = primaryTypeCounts
+                .OrderByDescending(kv => kv.Value)
+                .Select(kv => new TypeCount_t { Name = kv.Key, Count = kv.Value })
+                .ToList();
+        }
+
+        public int GetFirstSpriteId(int itemId)
+        {
+            if (_loadedAppearances == null) {
+                return 0;
+            }
+
+            var obj = _loadedAppearances.Object.FirstOrDefault(o => o.Id == (uint)itemId);
+            if (obj == null || obj.FrameGroup.Count == 0) {
+                return 0;
+            }
+
+            var spriteInfo = obj.FrameGroup[0].SpriteInfo;
+            if (spriteInfo == null || spriteInfo.SpriteId.Count == 0) {
+                return 0;
+            }
+
+            return (int)spriteInfo.SpriteId[0];
+        }
+
+        public void UpdateSpritePreview(int itemId)
+        {
+            if (_spriteRenderer == null || !_spriteRenderer.IsLoaded) {
+                ItemSpritePreview.Source = null;
+                ItemSpritePlaceholder.Visibility = Visibility.Visible;
+                ItemSpriteStatus.Text = "Load assets to see sprites";
+                return;
+            }
+
+            int spriteId = GetFirstSpriteId(itemId);
+            var bitmap = spriteId > 0 ? _spriteRenderer.GetSpriteBitmap(spriteId) : null;
+
+            if (bitmap != null) {
+                ItemSpritePreview.Source = bitmap;
+                ItemSpritePlaceholder.Visibility = Visibility.Collapsed;
+                ItemSpriteStatus.Text = "Sprite id " + spriteId;
+            } else {
+                ItemSpritePreview.Source = null;
+                ItemSpritePlaceholder.Visibility = Visibility.Visible;
+                ItemSpriteStatus.Text = spriteId > 0 ? ("No image for sprite id " + spriteId) : "No sprite for this item";
+            }
+        }
+
+        private static readonly string[] PlaceholderNames = { "", "reserved sprite", "unknown", "unknown item" };
+
+        private void FindFreeIds_Click(object sender, RoutedEventArgs e)
+        {
+            if (_loadedAppearances == null) {
+                MessageBox.Show("Click 'Load assets' first so this can see the full appearance catalog, including ids that have no items.xml entry at all.");
+                return;
+            }
+
+            var freeIds = new List<(uint Id, string Note)>();
+            foreach (var obj in _loadedAppearances.Object) {
+                if (obj.Flags == null) {
+                    continue;
+                }
+
+                Item existing = GetItemByID((int)obj.Id);
+                bool isFree = existing == null || PlaceholderNames.Contains(existing.Name.ToLower());
+                if (isFree) {
+                    string note = existing == null ? "no items.xml entry" : ("items.xml name: '" + existing.Name + "'");
+                    freeIds.Add((obj.Id, note));
+                }
+            }
+
+            var lines = new List<string> {
+                $"Free/reusable appearance ids: {freeIds.Count}",
+                "These are ids the client actually has real appearance data for (so a custom item using",
+                "one will render properly), but that items.xml either doesn't define at all or only defines",
+                "as a blank/reserved placeholder. Safe candidates for a new custom item.",
+                ""
+            };
+            lines.AddRange(freeIds.Select(f => $"{f.Id} - {f.Note}"));
+
+            try {
+                File.WriteAllLines("C:\\Users\\hunsi\\free_ids_report.txt", lines);
+            } catch (Exception) {
+                // Ignore dump failures, the summary popup below still tells the user the count.
+            }
+
+            MessageBox.Show($"Found {freeIds.Count} valid-but-unused appearance ids.\nFull list written to free_ids_report.txt.");
+        }
+
+        private void DataQualityReport_Click(object sender, RoutedEventArgs e)
+        {
+            if (_lastLoadedXmlPath == null) {
+                MessageBox.Show("Load an XML file first.");
+                return;
+            }
+
+            var duplicateAttributeItems = new List<string>();
+            var emptyNameItems = new List<string>();
+            var noPrimaryTypeItems = new List<string>();
+
+            try {
+                XmlDocument xml = new XmlDocument();
+                xml.Load(_lastLoadedXmlPath);
+                XmlNode itemsNode = xml.LastChild;
+
+                foreach (XmlNode itemNode in itemsNode.ChildNodes) {
+                    if (itemNode.NodeType == XmlNodeType.Comment || itemNode.Name != _itemNode) {
+                        continue;
+                    }
+
+                    string id = itemNode.Attributes["id"]?.Value ?? (itemNode.Attributes["fromid"]?.Value + "-" + itemNode.Attributes["toid"]?.Value);
+                    string name = itemNode.Attributes["name"]?.Value ?? string.Empty;
+
+                    var seenKeys = new HashSet<string>();
+                    foreach (XmlNode attributeNode in itemNode.ChildNodes) {
+                        string key = attributeNode.Attributes?["key"]?.Value?.ToLower();
+                        if (key == null) {
+                            continue;
+                        }
+                        if (!seenKeys.Add(key)) {
+                            duplicateAttributeItems.Add($"id {id} ('{name}'): duplicate '{key}' attribute");
+                        }
+                    }
+
+                    if (name.Trim().Length == 0) {
+                        emptyNameItems.Add($"id {id}: empty name");
+                    }
+
+                    bool hasPrimaryType = false;
+                    foreach (XmlNode attributeNode in itemNode.ChildNodes) {
+                        if (attributeNode.Attributes?["key"]?.Value?.ToLower() == "primarytype") {
+                            hasPrimaryType = true;
+                            break;
+                        }
+                    }
+                    if (!hasPrimaryType && name.Trim().Length > 0) {
+                        noPrimaryTypeItems.Add($"id {id} ('{name}'): no primarytype set");
+                    }
+                }
+            } catch (Exception ex) {
+                MessageBox.Show("[ERROR] Failed to read XML for the data quality report: " + ex.Message);
+                return;
+            }
+
+            var lines = new List<string> {
+                $"Duplicate attributes (last value silently wins, on both this tool and Canary itself): {duplicateAttributeItems.Count}",
+            };
+            lines.AddRange(duplicateAttributeItems);
+            lines.Add("");
+            lines.Add($"Items with an empty name: {emptyNameItems.Count}");
+            lines.AddRange(emptyNameItems);
+            lines.Add("");
+            lines.Add($"Named items with no primarytype: {noPrimaryTypeItems.Count}");
+            lines.AddRange(noPrimaryTypeItems);
+
+            try {
+                File.WriteAllLines("C:\\Users\\hunsi\\data_quality_report.txt", lines);
+            } catch (Exception) {
+                // Ignore dump failures, the summary popup below still tells the user the counts.
+            }
+
+            MessageBox.Show(
+                $"Duplicate attributes: {duplicateAttributeItems.Count}\n" +
+                $"Empty names: {emptyNameItems.Count}\n" +
+                $"Missing primarytype: {noPrimaryTypeItems.Count}\n\n" +
+                "Full list written to data_quality_report.txt."
+            );
         }
 
         #endregion
