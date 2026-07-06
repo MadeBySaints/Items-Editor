@@ -1,5 +1,7 @@
 # Items-Editor
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
 DevM Items Editor is a tool that can make server development easier.
 
 Offer tools to update and create missing items on your XML by pushing it from client 12 assets and Tibia WIKI.
@@ -10,6 +12,11 @@ This item editor was created to work along with Canary and OpenTibiaBR repositor
 
 > **This fork:** patched to load and save modern Canary (protocol 15.x) items.xml files without crashing or
 > silently dropping/corrupting attributes. See [Fork changes](#fork-changes) below.
+
+> **License:** the upstream [marcosvf132/Items-Editor](https://github.com/marcosvf132/Items-Editor) has no
+> license of its own (all rights reserved by default). This fork's own changes and additions are released
+> under the [MIT license](LICENSE) in this repo; that does not retroactively relicense marcosvf132's
+> original, unmodified code.
 
 # How to use
  - Compile the program with Visual studio or download the compiled release.
