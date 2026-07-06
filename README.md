@@ -10,7 +10,7 @@ This item editor was created to work along with Canary and OpenTibiaBR repositor
 
 > On different server bases and versions may demand adaptation to work as intended.
 
-> **This fork:** patched to load and save modern Canary (protocol 15.x) items.xml files without crashing or
+> **This fork:** patched to load and save modern Canary (protocol 15.11) items.xml files without crashing or
 > silently dropping/corrupting attributes. See [Fork changes](#fork-changes) below.
 
 > **License:** the upstream [marcosvf132/Items-Editor](https://github.com/marcosvf132/Items-Editor) has no
@@ -30,7 +30,7 @@ This item editor was created to work along with Canary and OpenTibiaBR repositor
    user profile folder for easier review.
 
 # Need help?
- - Feel free to message me on Discord. Check the 'about' label below.
+ - Join the SaintsOT Discord: https://discord.gg/6tA85qhJEY
 
 # Compiling
  Open the project on Visual Studio and just hit Build, or run `dotnet build "Devm items editor.csproj" -c Release`
@@ -76,7 +76,7 @@ This item editor was created to work along with Canary and OpenTibiaBR repositor
    matching standard XML attribute-value normalization, instead of coming back out as a literal newline.
  - The on-screen log window is now also written to `items_editor_log.txt` for easier review of large logs.
 
- Verified via a full semantic diff of a load→save round trip against a real, current 15.x `items.xml`
+ Verified via a full semantic diff of a load→save round trip against a real, current 15.11 `items.xml`
  (37,509 items): zero remaining differences that aren't pre-existing duplicate-attribute definitions already
  present in the source file itself (which Canary's own parser resolves identically either way).
 
@@ -98,5 +98,6 @@ This item editor was created to work along with Canary and OpenTibiaBR repositor
    [jljusten/LZMA-SDK](https://github.com/jljusten/LZMA-SDK)) for the raw LZMA1 decompression.
 
 # About
- Tool created by Marcosvf132. You can message me on discord if you have any doubts or wan't to contribute somehow:
-  > Discord: Marcosvf132#8947
+ Originally created by Marcosvf132: https://github.com/marcosvf132/Items-Editor
+
+ This fork is maintained for SaintsOT. Join the Discord for help or questions: https://discord.gg/6tA85qhJEY
