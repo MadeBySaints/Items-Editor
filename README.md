@@ -73,6 +73,23 @@ This item editor was created to work along with Canary and OpenTibiaBR repositor
  (37,509 items): zero remaining differences that aren't pre-existing duplicate-attribute definitions already
  present in the source file itself (which Canary's own parser resolves identically either way).
 
+ New features added on top of the original tool:
+
+ - **Overview tab.** A dashboard shown on load: total loaded entries/ids, distinct type count, last load
+   warning count, and full breakdowns by `type` and `primarytype`. Refreshes automatically after Load XML,
+   Load assets, and Load Wiki.
+ - **Find free IDs button.** Scans the loaded appearance catalog for ids that have real client sprite data
+   but no real `items.xml` entry (or only a blank/reserved placeholder) — i.e. ids that are safe to repurpose
+   for a new custom item. Writes `free_ids_report.txt`.
+ - **Data quality report button.** Re-scans the raw loaded XML for duplicate attribute keys within the same
+   item, empty names, and named items missing `primarytype`. Writes `data_quality_report.txt`.
+ - **Sprite preview.** The Index tab now renders the selected item's actual sprite, decoded directly from the
+   client's `sprites-*.bmp.lzma` sheets (see [`SpriteRenderer.cs`](SpriteRenderer.cs) for the reverse-engineered
+   file format). "Load assets" also loads `catalog-content.json` from the same folder to enable this — point
+   it at your **client's** `things/<version>/` folder (not just a lone copy of `appearances.dat`) for previews
+   to work. Uses a vendored copy of the classic public-domain LZMA SDK (`Lzma/`, Igor Pavlov,
+   [jljusten/LZMA-SDK](https://github.com/jljusten/LZMA-SDK)) for the raw LZMA1 decompression.
+
 # About
  Tool created by Marcosvf132. You can message me on discord if you have any doubts or wan't to contribute somehow:
   > Discord: Marcosvf132#8947
