@@ -97,6 +97,12 @@ This item editor was created to work along with Canary and OpenTibiaBR repositor
    to work. Uses a vendored copy of the classic public-domain LZMA SDK (`Lzma/`, Igor Pavlov,
    [jljusten/LZMA-SDK](https://github.com/jljusten/LZMA-SDK)) for the raw LZMA1 decompression.
 
+# Planned features
+
+ - **Remove ServerID/`items.otb` loading.** Protocol 15.11 has no `items.otb` at all — the server reads
+   directly from `items.xml`, so ServerID/ClientID conversion is dead weight left over from the classic-client
+   era. Dropping it removes a whole load path (and its failure modes) rather than just leaving it unused.
+
 # About
  Originally created by Marcosvf132: https://github.com/marcosvf132/Items-Editor
 
